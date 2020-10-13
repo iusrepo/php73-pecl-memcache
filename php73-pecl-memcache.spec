@@ -16,11 +16,13 @@
 %global with_tests 0%{!?_without_tests:1}
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name  40-%{pecl_name}.ini
+# Define user for running test memcached instances.
+%global whoami %(whoami)
 
 Summary:      Extension to work with the Memcached caching daemon
 Name:         %{php}-pecl-memcache
 Version:      4.0.5.2
-Release:      4%{?dist}
+Release:      5%{?dist}
 Source0:      https://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 License:      PHP
 Group:        Development/Languages
@@ -194,9 +196,9 @@ sed -e "s:/var/run/memcached/memcached.sock:$PWD/memcached.sock:" \
     -i tests/connect.inc
 
 : Launch the daemons
-memcached -p 11211 -U 11211      -d -P $PWD/memcached1.pid
-memcached -p 11212 -U 11212      -d -P $PWD/memcached2.pid
-memcached -s $PWD/memcached.sock -d -P $PWD/memcached3.pid
+memcached -u %{whoami} -p 11211 -U 11211      -d -P $PWD/memcached1.pid
+memcached -u %{whoami} -p 11212 -U 11212      -d -P $PWD/memcached2.pid
+memcached -u %{whoami} -s $PWD/memcached.sock -d -P $PWD/memcached3.pid
 
 : Upstream test suite for NTS extension
 ret=0
@@ -230,6 +232,9 @@ exit $ret
 
 
 %changelog
+* Tue Oct 13 2020 Jeff Sheltren <jeff@tag1consulting.com> - 4.0.5.2-5
+- Update checks to run memcached test instances as build user
+
 * Wed Aug 19 2020 Kerry Vance <kerryavance@gmail.com> - 4.0.5.2-4
 - Port from Fedora to IUS
 
